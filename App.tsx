@@ -15,8 +15,11 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  const [expoPushToken, setExpoPushToken] = useState<any>("");
-  const [notification, setNotification] = useState<any>(false);
+  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
+  const [notification, setNotification] = useState<
+    Notifications.Notification | false
+  >(false);
+
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
 
@@ -45,8 +48,12 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text>Your expo push token: {expoPushToken}</Text>
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
+      <Text>Your expo push token:</Text>
+      <Text> {expoPushToken}</Text>
+      
+      <View
+        style={{ flex: 1 / 4, alignItems: "center", justifyContent: "center" }}
+      >
         <Text>
           Title: {notification && notification.request.content.title}{" "}
         </Text>
@@ -56,6 +63,7 @@ export default function App() {
           {notification && JSON.stringify(notification.request.content.data)}
         </Text>
       </View>
+
       <Button
         title="Press to schedule a notification"
         onPress={async () => {
