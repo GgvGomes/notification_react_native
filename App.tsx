@@ -5,6 +5,7 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 
 import { styles } from "./styles";
+import { Subscription } from "expo-notifications";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -20,8 +21,8 @@ export default function App() {
     Notifications.Notification | false
   >(false);
 
-  const notificationListener = useRef<any>();
-  const responseListener = useRef<any>();
+  const notificationListener = useRef<Subscription>();
+  const responseListener = useRef<Subscription>();
 
   useEffect(() => {
     registerForPushNotificationsAsync().then((token) =>
@@ -39,18 +40,22 @@ export default function App() {
       });
 
     return () => {
-      Notifications.removeNotificationSubscription(
-        notificationListener.current
-      );
-      Notifications.removeNotificationSubscription(responseListener.current);
+      if (notificationListener.current)
+        Notifications.removeNotificationSubscription(
+          notificationListener.current
+        );
+
+      if (responseListener.current)
+        Notifications.removeNotificationSubscription(responseListener.current);
     };
+
   }, []);
 
   return (
     <View style={styles.container}>
       <Text>Your expo push token:</Text>
       <Text> {expoPushToken}</Text>
-      
+
       <View
         style={{ flex: 1 / 4, alignItems: "center", justifyContent: "center" }}
       >
@@ -100,15 +105,18 @@ async function registerForPushNotificationsAsync() {
   if (Device.isDevice) {
     const { status: existingStatus } =
       await Notifications.getPermissionsAsync();
+
     let finalStatus = existingStatus;
     if (existingStatus !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
+
     if (finalStatus !== "granted") {
       alert("Failed to get push token for push notification!");
       return;
     }
+    
     token = (await Notifications.getExpoPushTokenAsync()).data;
     console.log(token);
   } else {
